@@ -95,6 +95,14 @@ function interop(t, browserA, browserB) {
     return Promise.all([driverA.quit(), driverB.quit()])
   })
   .then(function() {
+    // Edge's Webdriver seems to require some time to shut down?
+    if (browserA === 'MicrosoftEdge' || browserB === 'MicrosoftEdge') {
+      return new Promise(function(resolve) {
+        setTimeout(resolve, 2000);
+      });
+    }
+  })
+  .then(function() {
     t.end();
   });
 }
@@ -103,15 +111,16 @@ test('Chrome-Chrome', function(t) {
   interop(t, 'chrome', 'chrome')
 });
 
-test('Firefox-Firefox', function(t) {
+// geckodriver does not find Firefox binary on Win10?
+test('Firefox-Firefox', {skip: os.platform() === 'win32'}, function(t) {
   interop(t, 'firefox', 'firefox')
 });
 
-test('Chrome-Firefox', function(t) {
+test('Chrome-Firefox', {skip: os.platform() === 'win32'}, function(t) {
   interop(t, 'chrome', 'firefox')
 });
 
-test('Firefox-Chrome', function(t) {
+test('Firefox-Chrome', {skip: os.platform() === 'win32'}, function(t) {
   interop(t, 'firefox', 'chrome')
 });
 
@@ -119,6 +128,7 @@ test('Firefox-Chrome', function(t) {
 test('Edge-Edge', {skip: os.platform() !== 'win32'}, function(t) {
   interop(t, 'MicrosoftEdge', 'MicrosoftEdge')
 });
+*/
 
 test('Chrome-Edge', {skip: os.platform() !== 'win32'}, function(t) {
   interop(t, 'chrome', 'MicrosoftEdge')
@@ -127,4 +137,3 @@ test('Chrome-Edge', {skip: os.platform() !== 'win32'}, function(t) {
 test('Edge-Chrome', {skip: os.platform() !== 'win32'}, function(t) {
   interop(t, 'MicrosoftEdge', 'chrome')
 });
-*/
