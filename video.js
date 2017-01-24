@@ -173,66 +173,70 @@ function video(t, browserA, browserB, preferredVideoCodec) {
   });
 }
 
-test('Chrome-Chrome, VP8', function(t) {
-  video(t, 'chrome', 'chrome', 'VP8');
-});
 
-test('Chrome-Firefox, VP8', function(t) {
-  video(t, 'chrome', 'firefox', 'VP8');
-});
+module.exports = video;
+if (require.main == module) {
+    test('Chrome-Chrome, VP8', function(t) {
+      video(t, 'chrome', 'chrome', 'VP8');
+    });
 
-test('Firefox-Firefox, VP8', function(t) {
-  video(t, 'firefox', 'firefox', 'VP8');
-});
+    test('Chrome-Firefox, VP8', function(t) {
+      video(t, 'chrome', 'firefox', 'VP8');
+    });
 
-test('Firefox-Chrome, VP8', function(t) {
-  video(t, 'firefox', 'chrome', 'VP8');
-});
+    test('Firefox-Firefox, VP8', function(t) {
+      video(t, 'firefox', 'firefox', 'VP8');
+    });
 
-test('Chrome-Chrome, VP9', function(t) {
-  video(t, 'chrome', 'chrome', 'VP9');
-});
+    test('Firefox-Chrome, VP8', function(t) {
+      video(t, 'firefox', 'chrome', 'VP8');
+    });
 
-test('Firefox-Firefox, VP9', function(t) {
-  video(t, 'firefox', 'firefox', 'VP9');
-});
+    test('Chrome-Chrome, VP9', function(t) {
+      video(t, 'chrome', 'chrome', 'VP9');
+    });
 
-// H264 interop requires Chrome 50+ and a Firefox
-// profile pre-seeded with the right binary,
-test('Chrome-Chrome, H264', function(t) {
-  video(t, 'chrome', 'chrome', 'H264');
-});
+    test('Firefox-Firefox, VP9', function(t) {
+      video(t, 'firefox', 'firefox', 'VP9');
+    });
 
-test('Firefox-Firefox, H264', function(t) {
-  video(t, 'firefox', 'firefox', 'H264');
-});
+    // H264 interop requires Chrome 50+ and a Firefox
+    // profile pre-seeded with the right binary,
+    test('Chrome-Chrome, H264', function(t) {
+      video(t, 'chrome', 'chrome', 'H264');
+    });
 
-test('Chrome-Firefox, H264', function(t) {
-  video(t, 'chrome', 'firefox', 'H264');
-});
+    test('Firefox-Firefox, H264', function(t) {
+      video(t, 'firefox', 'firefox', 'H264');
+    });
 
-test('Firefox-Chrome, H264', function(t) {
-  video(t, 'firefox', 'chrome', 'H264');
-});
+    test('Chrome-Firefox, H264', function(t) {
+      video(t, 'chrome', 'firefox', 'H264');
+    });
 
-test('Edge-Chrome', {skip: os.platform() !== 'win32'}, function (t) {
-  video(t, 'MicrosoftEdge', 'chrome', 'H264');
-});
+    test('Firefox-Chrome, H264', function(t) {
+      video(t, 'firefox', 'chrome', 'H264');
+    });
 
-test('Chrome-Edge', {skip: os.platform() !== 'win32'}, function (t) {
-  video(t, 'chrome', 'MicrosoftEdge', 'H264');
-});
+    test('Edge-Chrome', {skip: os.platform() !== 'win32'}, function (t) {
+      video(t, 'MicrosoftEdge', 'chrome', 'H264');
+    });
 
-test('Edge-Firefox', {skip: os.platform() !== 'win32'}, function (t) {
-  video(t, 'MicrosoftEdge', 'firefox', 'H264');
-});
+    test('Chrome-Edge', {skip: os.platform() !== 'win32'}, function (t) {
+      video(t, 'chrome', 'MicrosoftEdge', 'H264');
+    });
 
-test('Firefox-Edge', {skip: os.platform() !== 'win32'}, function (t) {
-  video(t, 'firefox', 'MicrosoftEdge', 'H264');
-});
+    test('Edge-Firefox', {skip: os.platform() !== 'win32'}, function (t) {
+      video(t, 'MicrosoftEdge', 'firefox', 'H264');
+    });
 
-/*
-test('Edge-Edge', {skip: os.platform() !== 'win32'}, function (t) {
-  video(t, 'MicrosoftEdge', 'MicrosoftEdge', 'H264');
-});
-*/
+    test('Firefox-Edge', {skip: os.platform() !== 'win32'}, function (t) {
+      video(t, 'firefox', 'MicrosoftEdge', 'H264');
+    });
+
+    /*
+    test('Edge-Edge', {skip: os.platform() !== 'win32'}, function (t) {
+      video(t, 'MicrosoftEdge', 'MicrosoftEdge', 'H264');
+    });
+    */
+}
