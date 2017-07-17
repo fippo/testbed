@@ -74,6 +74,9 @@ function buildDriver(browser, options) {
     chromeOptions.addArguments('headless');
     chromeOptions.addArguments('disable-gpu');
   }
+  if (options.noSandbox) {
+    chromeOptions.addArguments('no-sandbox');
+  }
 
   if (options.chromepath) {
     chromeOptions.setChromeBinaryPath(options.chromepath);
