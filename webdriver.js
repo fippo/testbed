@@ -123,11 +123,17 @@ function buildDriver(browser, options) {
   var safariOptions = new safari.Options();
   safariOptions.setTechnologyPreview(options.bver === 'unstable');
 
+  var loggingPreferences = new webdriver.logging.Preferences();
+  if (options.browserLogging) {
+    loggingPreferences.setLevel(webdriver.logging.Type.BROWSER, webdriver.logging.Level.ALL);
+  }
+
   var driver = new webdriver.Builder()
       .setFirefoxOptions(firefoxOptions)
       .setChromeOptions(chromeOptions)
       .setEdgeOptions(edgeOptions)
       .setSafariOptions(safariOptions)
+      .setLoggingPrefs(loggingPreferences)
       .forBrowser(browser);
   if (options.server === true) {
     driver = driver.usingServer('http://localhost:4444/wd/hub/');
