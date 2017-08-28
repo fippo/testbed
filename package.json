@@ -5,8 +5,8 @@
   "main": "apprtc.js",
   "dependencies": {
     "chromedriver": "^2.30.1",
-    "geckodriver": "1.4.0",
-    "selenium-webdriver": "3.3.0"
+    "geckodriver": "1.7.0",
+    "selenium-webdriver": "^3.3.0"
   },
   "scripts": {
     "start": "node video.js"
