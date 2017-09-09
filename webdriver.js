@@ -145,6 +145,7 @@ function buildDriver(browser, options) {
 
   if (browser === 'firefox') {
     driver.getCapabilities().set('marionette', true);
+    driver.getCapabilities().set('acceptInsecureCerts', true);
   }
   driver = driver.build();
 
