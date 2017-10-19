@@ -47,16 +47,22 @@ function buildDriver(browser, options) {
 
   var firefoxOptions = new firefox.Options()
       .setProfile(profile);
+  var firefoxPath;
   if (options.firefoxpath) {
-      firefoxOptions.setBinary(options.firefoxpath);
+      firefoxPath = options.firefoxpath;
   } else if (!grid) {
     if (os.platform() === 'win32') {
       // TODO: why does geckodriver not find this (fairly standard) path?
-      firefoxOptions.setBinary('C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe');
+      firefoxPath = 'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe';
     } else if (os.platform() == 'linux' && options.bver) {
-      firefoxOptions.setBinary('browsers/bin/firefox-' + options.bver);
+      firefoxPath = 'browsers/bin/firefox-' + options.bver;
     }
   }
+  var firefoxBinary = new firefox.Binary(firefoxPath);
+  if (options.headless) {
+    firefoxBinary.addArguments('-headless');
+  }
+  firefoxOptions.setBinary(firefoxBinary);
 
   // Chrome options.
   var chromeOptions = new chrome.Options()
