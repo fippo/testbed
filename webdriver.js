@@ -84,13 +84,15 @@ function buildDriver(browser, options) {
     chromeOptions.addArguments('no-sandbox');
   }
 
-  if (options.chromepath) {
+  if (options.android) {
+    chromeOptions = chromeOptions.androidChrome();
+  } else if (options.chromepath) {
     chromeOptions.setChromeBinaryPath(options.chromepath);
   } else if (!grid && os.platform() === 'linux' && options.bver) {
     chromeOptions.setChromeBinaryPath('browsers/bin/chrome-' + options.bver);
   }
 
-  if (!options.devices) {
+  if (!options.devices || options.android) {
     chromeOptions.addArguments('use-fake-ui-for-media-stream');
   } else {
     // see https://bugs.chromium.org/p/chromium/issues/detail?id=459532#c22
