@@ -6,7 +6,7 @@
   "dependencies": {
     "chromedriver": "^2.30.1",
     "geckodriver": "^1.7.0",
-    "selenium-webdriver": "^3.3.0"
+    "selenium-webdriver": "^3.6.0"
   },
   "scripts": {
     "start": "node video.js"
