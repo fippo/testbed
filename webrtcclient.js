@@ -78,18 +78,18 @@ WebRTCClient.prototype.createDataChannel = function(label, dict) {
   }, label, dict);
 }
 
-WebRTCClient.prototype.createOffer = function() {
-  return this.driver.executeAsyncScript(function() {
+WebRTCClient.prototype.createOffer = function(offerOptions) {
+  return this.driver.executeAsyncScript(function(offerOptions) {
     var callback = arguments[arguments.length - 1];
 
-    pc.createOffer()
+    pc.createOffer(offerOptions)
     .then(function(offer) {
       callback(offer);
     })
     .catch(function(err) {
       callback(err);
     });
-  });
+  }, offerOptions);
 };
 
 WebRTCClient.prototype.createAnswer = function() {
