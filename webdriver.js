@@ -48,6 +48,10 @@ function buildDriver(browser, options) {
     profile.setPreference('media.peerconnection.enabled', false);
   }
 
+  if (options.devices && options.devices.extension) {
+    profile.addExtension(options.devices.extension);
+  }
+
   var firefoxOptions = new firefox.Options()
       .setProfile(profile);
   var firefoxPath;

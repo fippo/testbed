@@ -60,11 +60,13 @@ function denyAllow(browser) {
     })
     .then(() => waitNVideosExist(driver, 1))
     .then(() => waitAllVideosHaveEnoughData(driver))
+    .then(() => driver.sleep(3000)) // wait a bit.
     .then(() => driver.quit());
 }
 
 Promise.resolve()
 .then(() => denyAllow("chrome"))
+.then(() => denyAllow("firefox"))
 .catch((e) => {
     console.error("FAIL", e);
     process.exit(1);
