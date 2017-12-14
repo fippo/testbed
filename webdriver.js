@@ -1,13 +1,13 @@
-var os = require('os');
-var fs = require('fs');
+const os = require('os');
+const fs = require('fs');
 
-var webdriver = require('selenium-webdriver');
-var chrome = require('selenium-webdriver/chrome');
-var firefox = require('selenium-webdriver/firefox');
-var edge = require('selenium-webdriver/edge');
-var safari = require('selenium-webdriver/safari');
+const webdriver = require('selenium-webdriver');
+const chrome = require('selenium-webdriver/chrome');
+const firefox = require('selenium-webdriver/firefox');
+const edge = require('selenium-webdriver/edge');
+const safari = require('selenium-webdriver/safari');
 
-var grid = process.env.SELENIUM_SERVER;
+const grid = process.env.SELENIUM_SERVER;
 
 // setup path for webdriver binaries
 if (os.platform() === 'win32') {
@@ -23,7 +23,7 @@ if (os.platform() === 'win32') {
 
 function buildDriver(browser, options) {
   // Firefox options.
-  var profile;
+  let profile;
   options = options || {};
   if (options.firefoxprofile) {
     profile = new firefox.Profile(options.firefoxprofile);
@@ -52,9 +52,9 @@ function buildDriver(browser, options) {
     profile.addExtension(options.devices.extension);
   }
 
-  var firefoxOptions = new firefox.Options()
+  const firefoxOptions = new firefox.Options()
       .setProfile(profile);
-  var firefoxPath;
+  let firefoxPath;
   if (options.firefoxpath) {
       firefoxPath = options.firefoxpath;
   } else if (!grid) {
@@ -65,14 +65,14 @@ function buildDriver(browser, options) {
       firefoxPath = 'browsers/bin/firefox-' + options.bver;
     }
   }
-  var firefoxBinary = new firefox.Binary(firefoxPath);
+  const firefoxBinary = new firefox.Binary(firefoxPath);
   if (options.headless) {
     firefoxBinary.addArguments('-headless');
   }
   firefoxOptions.setBinary(firefoxBinary);
 
   // Chrome options.
-  var chromeOptions = new chrome.Options()
+  let chromeOptions = new chrome.Options()
       // .setChromeBinaryPath('/usr/bin/google-chrome-beta')
       .addArguments('enable-features=WebRTC-H264WithOpenH264FFmpeg')
       .addArguments('allow-file-access-from-files')
@@ -103,8 +103,8 @@ function buildDriver(browser, options) {
     chromeOptions.addArguments('use-fake-ui-for-media-stream');
   } else {
     // see https://bugs.chromium.org/p/chromium/issues/detail?id=459532#c22
-    var domain = 'https://' + (options.devices.domain || 'localhost') + ':' + (options.devices.port || 443) + ',*';
-    var exceptions = {
+    const domain = 'https://' + (options.devices.domain || 'localhost') + ':' + (options.devices.port || 443) + ',*';
+    const exceptions = {
       media_stream_mic: {},
       media_stream_camera: {}
     };
@@ -133,17 +133,17 @@ function buildDriver(browser, options) {
     }
   }
 
-  var edgeOptions = new edge.Options();
+  const edgeOptions = new edge.Options();
 
-  var safariOptions = new safari.Options();
+  const safariOptions = new safari.Options();
   safariOptions.setTechnologyPreview(options.bver === 'unstable');
 
-  var loggingPreferences = new webdriver.logging.Preferences();
+  const loggingPreferences = new webdriver.logging.Preferences();
   if (options.browserLogging) {
     loggingPreferences.setLevel(webdriver.logging.Type.BROWSER, webdriver.logging.Level.ALL);
   }
 
-  var driver = new webdriver.Builder()
+  let driver = new webdriver.Builder()
       .setFirefoxOptions(firefoxOptions)
       .setChromeOptions(chromeOptions)
       .setEdgeOptions(edgeOptions)
