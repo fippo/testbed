@@ -60,7 +60,7 @@ function video(t, browserA, browserB) {
   })
   .then((streams) => {
     t.pass('got user media');
-    return Promise.all(streams.map(stream => clientA.addStream(stream)));
+    return Promise.all(streams.map(stream => stream.getTracks().forEach(t => clientA.addTrack(t, stream))));
   })
   .then(() => clientA.createOffer())
   .then(offer => {

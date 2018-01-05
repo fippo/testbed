@@ -120,6 +120,14 @@ WebRTCClient.prototype.addStream = function(stream) {
   }, stream);
 };
 
+WebRTCClient.prototype.addTrack = function(track, stream) {
+  return this.driver.executeScript((track, stream) => {
+    stream = localStreams[stream.id];
+    track = stream.getTracks().find(t => t.id === track.id);
+    pc.addTrack(track, stream);
+  }, track, stream);
+}
+
 WebRTCClient.prototype.createDataChannel = function(label, dict) {
   return this.driver.executeScript((label, dict) => {
     pc.createDataChannel(label, dict);
