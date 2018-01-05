@@ -13,57 +13,45 @@ const TIMEOUT = 30000;
 // in talky, each jingle session has a single peerconnection.
 // but sessions are one-way because reasons.
 function waitNPeerConnectionsExist(driver, n) {
-    return driver.wait(function() {
-        return driver.executeScript(function(n) {
-            return Object.keys(app.xmpp.jingle.sessions).length === n;
-        }, n);
-    }, TIMEOUT);
+    return driver.wait(() => driver.executeScript(n => Object.keys(app.xmpp.jingle.sessions).length === n, n), TIMEOUT);
 }
 
 function waitAllPeerConnectionsConnected(driver) {
-    return driver.wait(function() {
-        return driver.executeScript(function() {
-            var sessions = app.xmpp.jingle.sessions;
-            var states = [];
-            Object.keys(sessions).forEach(function(sid) {
-                var session = sessions[sid];
-                if (session.pc && session.pc.pc) {
-                    states.push(session.pc.pc.iceConnectionState);
-                }
-            });
-            return states.length === states.filter((s) => s === 'connected' || s === 'completed').length;
+    return driver.wait(() => driver.executeScript(() => {
+        var sessions = app.xmpp.jingle.sessions;
+        var states = [];
+        Object.keys(sessions).forEach(sid => {
+            var session = sessions[sid];
+            if (session.pc && session.pc.pc) {
+                states.push(session.pc.pc.iceConnectionState);
+            }
         });
-    }, TIMEOUT);
+        return states.length === states.filter((s) => s === 'connected' || s === 'completed').length;
+    }), TIMEOUT);
 }
 
 // talky shows one local video, one roster and one large video per person.
 function waitNVideosExist(driver, n) {
-    return driver.wait(function() {
-        return driver.executeScript(function(n) {
-            return document.querySelectorAll('video').length === n;
-        }, n);
-    }, TIMEOUT);
+    return driver.wait(() => driver.executeScript(n => document.querySelectorAll('video').length === n, n), TIMEOUT);
 }
 
 function waitAllVideosHaveEnoughData(driver) {
-    return driver.wait(function() {
-        return driver.executeScript(function() {
-            var videos = document.querySelectorAll('video');
-            var ready = 0;
-            for (var i = 0; i < videos.length; i++) {
-                if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
-                    ready++;
-                }
+    return driver.wait(() => driver.executeScript(() => {
+        var videos = document.querySelectorAll('video');
+        var ready = 0;
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
+                ready++;
             }
-            return ready === videos.length;
-        });
-    }, TIMEOUT);
+        }
+        return ready === videos.length;
+    }), TIMEOUT);
 }
 
 // Edge Webdriver resolves quit slightly too early, wait a bit.
 function maybeWaitForEdge(browserA, browserB) {
     if (browserA === 'MicrosoftEdge' || browserB === 'MicrosoftEdge') {
-        return new Promise(function(resolve) {
+        return new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
     }
@@ -81,65 +69,55 @@ function interop(t, browserA, browserB) {
   driverA.manage().timeouts().setScriptTimeout(TIMEOUT);
 
   return driverA.get(baseURL + roomName)
-  .then(function() {
-    return driverA.findElement(webdriver.By.id('join')).click();
-  })
-  .then(function() {
-    return driverB.get(baseURL + roomName);
-  })
-  .then(function() {
-    return driverB.findElement(webdriver.By.id('join')).click();
-  })
-  .then(function() {
+  .then(() => driverA.findElement(webdriver.By.id('join')).click())
+  .then(() => driverB.get(baseURL + roomName))
+  .then(() => driverB.findElement(webdriver.By.id('join')).click())
+  .then(() => {
     t.pass('joined room');
     return waitNPeerConnectionsExist(driverA, 2);
   })
-  .then(function() {
+  .then(() => {
     t.pass('peerconnections exist');
     return waitAllPeerConnectionsConnected(driverA);
   })
-  .then(function() {
+  .then(() => {
     t.pass('peerconnections connected or completed');
     return waitNVideosExist(driverA, 3);
   })
-  .then(function() {
+  .then(() => {
     t.pass('videos exist');
     return waitAllVideosHaveEnoughData(driverA);
   })
-  .then(function() {
+  .then(() => {
     t.pass('videos are in HAVE_ENOUGH_DATA state');
     return waitNVideosExist(driverB, 3);
   })
-  .then(function() {
+  .then(() => {
     t.pass('videos exist');
     return waitAllVideosHaveEnoughData(driverB);
   })
-  .then(function() {
+  .then(() => {
     t.pass('videos are in HAVE_ENOUGH_DATA state');
   })
-  .then(function() {
-    return Promise.all([driverA.quit(), driverB.quit()])
-  })
-  .then(function() {
-    return maybeWaitForEdge(browserA, browserB);
-  })
-  .then(function() {
+  .then(() => Promise.all([driverA.quit(), driverB.quit()]))
+  .then(() => maybeWaitForEdge(browserA, browserB))
+  .then(() => {
     t.end();
   });
 }
 
-test('Chrome-Chrome', function(t) {
+test('Chrome-Chrome', t => {
   interop(t, 'chrome', 'chrome')
 });
 
-test('Firefox-Firefox', function(t) {
+test('Firefox-Firefox', t => {
   interop(t, 'firefox', 'firefox')
 });
 
-test('Chrome-Firefox', function(t) {
+test('Chrome-Firefox', t => {
   interop(t, 'chrome', 'firefox')
 });
 
-test('Firefox-Chrome', function(t) {
+test('Firefox-Chrome', t => {
   interop(t, 'firefox', 'chrome')
 });

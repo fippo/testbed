@@ -16,63 +16,47 @@ function interop(t, browserA, browserB, preferredAudioCodec) {
   var clientB = new WebRTCClient(driverB);
 
   getTestpage(driverA)
-  .then(function() {
-    return getTestpage(driverB);
-  })
-  .then(function() {
-    return clientA.create();
-  })
-  .then(function() {
-    return clientB.create();
-  })
-  .then(function() {
-    return clientA.createDataChannel('somechannel');
-  })
-  .then(function() {
-    return clientA.createOffer();
-  })
-  .then(function(offer) {
+  .then(() => getTestpage(driverB))
+  .then(() => clientA.create())
+  .then(() => clientB.create())
+  .then(() => clientA.createDataChannel('somechannel'))
+  .then(() => clientA.createOffer())
+  .then(offer => {
     t.pass('created offer');
     return clientA.setLocalDescription(offer);
   })
-  .then(function(offerWithCandidates) {
+  .then(offerWithCandidates => {
     t.pass('offer ready to signal');
     return clientB.setRemoteDescription(offerWithCandidates);
   })
-  .then(function() {
-    return clientB.createAnswer();
-  })
-  .then(function(answer) {
+  .then(() => clientB.createAnswer())
+  .then(answer => {
     t.pass('created answer');
     return clientB.setLocalDescription(answer); // modify answer here?
   })
-  .then(function(answerWithCandidates) {
+  .then(answerWithCandidates => {
     t.pass('answer ready to signal');
     return clientA.setRemoteDescription(answerWithCandidates);
   })
-  .then(function() {
-    // wait for the iceConnectionState to become either connected/completed
-    // or failed.
-    return clientA.waitForIceConnectionStateChange();
-  })
-  .then(function(iceConnectionState) {
+  .then(() => // wait for the iceConnectionState to become either connected/completed
+  // or failed.
+  clientA.waitForIceConnectionStateChange())
+  .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
-  .then(function() {
-    return Promise.all([driverA.quit(), driverB.quit()])
-    .then(function() {
-      t.end();
-    });
-  })
-  .catch(function(err) {
+  .then(() => Promise.all([driverA.quit(), driverB.quit()])
+  .then(() => {
+    t.end();
+  }))
+  .catch(err => {
     t.fail(err);
   });
 }
 
-test('Chrome-Firefox', function (t) {
+test('Chrome-Firefox', t => {
   interop(t, 'chrome', 'firefox');
 });
 
-test('Firefox-Chrome', function (t) {
+test('Firefox-Chrome', t => {
   interop(t, 'firefox', 'chrome');
 });

@@ -14,7 +14,7 @@ WebRTCClient.prototype.create = function(pcConfig, keygenAlgorithm) {
 
       if (RTCPeerConnection.generateCertificate) {
         RTCPeerConnection.generateCertificate(keygenAlgorithm)
-        .then(function(cert) {
+        .then(cert => {
           if (!pcConfig) {
             pcConfig = {
               iceServers: []
@@ -24,7 +24,7 @@ WebRTCClient.prototype.create = function(pcConfig, keygenAlgorithm) {
           window.pc = new RTCPeerConnection(pcConfig);
           callback();
         })
-        .catch(function(err) {
+        .catch(err => {
           callback(err);
         });
       } else {
@@ -33,7 +33,7 @@ WebRTCClient.prototype.create = function(pcConfig, keygenAlgorithm) {
       }
     }, pcConfig, keygenAlgorithm);
   }
-  this.driver.executeScript(function(pcConfig) {
+  this.driver.executeScript(pcConfig => {
     window.pc = new RTCPeerConnection(pcConfig);
   }, pcConfig);
 };
@@ -42,10 +42,10 @@ WebRTCClient.prototype.generateCertificate = function(keygenAlgorithm) {
   return this.driver.executeAsyncScript(function(keygenAlgorithm) {
     var callback = arguments[arguments.length - 1];
     RTCPeerConnection.generateCertificate(keygenAlgorithm)
-    .then(function(cert) {
+    .then(cert => {
       callback(cert);
     })
-    .catch(function(err) {
+    .catch(err => {
       callback(err);
     });
   }, keygenAlgorithm);
@@ -56,24 +56,24 @@ WebRTCClient.prototype.getUserMedia = function(constraints) {
     var callback = arguments[arguments.length - 1];
 
     navigator.mediaDevices.getUserMedia(constraints)
-    .then(function(stream) {
+    .then(stream => {
       window.localstream = stream;
       callback();
     })
-    .catch(function(err) {
+    .catch(err => {
       callback(err);
     });
   }, constraints || {audio: true, video: true});
 };
 
 WebRTCClient.prototype.addStream = function() {
-  return this.driver.executeScript(function() {
+  return this.driver.executeScript(() => {
     pc.addStream(localstream);
   });
 };
 
 WebRTCClient.prototype.createDataChannel = function(label, dict) {
-  return this.driver.executeScript(function(label, dict) {
+  return this.driver.executeScript((label, dict) => {
     pc.createDataChannel(label, dict);
   }, label, dict);
 }
@@ -83,10 +83,10 @@ WebRTCClient.prototype.createOffer = function(offerOptions) {
     var callback = arguments[arguments.length - 1];
 
     pc.createOffer(offerOptions)
-    .then(function(offer) {
+    .then(offer => {
       callback(offer);
     })
-    .catch(function(err) {
+    .catch(err => {
       callback(err);
     });
   }, offerOptions);
@@ -97,10 +97,10 @@ WebRTCClient.prototype.createAnswer = function() {
     var callback = arguments[arguments.length - 1];
 
     return pc.createAnswer()
-    .then(function(answer) {
+    .then(answer => {
       callback(answer);
     })
-    .catch(function(err) {
+    .catch(err => {
       callback(err);
     });
   });
@@ -119,9 +119,7 @@ WebRTCClient.prototype.setLocalDescription = function(desc) {
           sdp: pc.localDescription.sdp
         };
         if (desc.sdp.indexOf('\r\na=end-of-candidates\r\n') === -1) {
-          var parts = desc.sdp.split('\r\nm=').map(function(part, index) {
-            return (index > 0 ? 'm=' + part : part).trim() + '\r\n';
-          });
+          var parts = desc.sdp.split('\r\nm=').map((part, index) => (index > 0 ? 'm=' + part : part).trim() + '\r\n');
           for (var i = 1; i < parts.length; i++) {
             parts[i] += 'a=end-of-candidates\r\n';
           }
@@ -133,7 +131,7 @@ WebRTCClient.prototype.setLocalDescription = function(desc) {
     };
 
     pc.setLocalDescription(new RTCSessionDescription(desc))
-    .catch(function(err) {
+    .catch(err => {
       callback(err);
     });
   }, desc);
@@ -152,10 +150,10 @@ WebRTCClient.prototype.setRemoteDescription = function(desc) {
       document.body.appendChild(video);
     };
     pc.setRemoteDescription(new RTCSessionDescription(desc))
-    .then(function() {
+    .then(() => {
       callback();
     })
-    .catch(function(err) {
+    .catch(err => {
       callback(err);
     });
   }, desc);
@@ -184,11 +182,11 @@ WebRTCClient.prototype.getStats = function() {
     var callback = arguments[arguments.length - 1];
 
     pc.getStats(null)
-    .then(function(stats) {
+    .then(stats => {
       callback(stats.entries ?  [... stats.entries()] : stats);
     });
   })
-  .then(function(stats) {
+  .then(stats => {
     if (Array.isArray(stats)) {
       return new Map(stats);
     }

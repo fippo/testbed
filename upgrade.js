@@ -14,12 +14,8 @@ function mangle(sdp) {
   for (var i = 1; i < mediaSections.length; i++) {
     var parts;
     var ssrclines = SDPUtils.matchPrefix(mediaSections[i], 'a=ssrc');
-    var chromeMsid = ssrclines.filter(function(line) {
-      return line.split(' ')[1].indexOf('msid:') === 0;
-    });
-    var cnames = ssrclines.filter(function(line) {
-      return line.split(' ')[1].indexOf('cname:') === 0;
-    });
+    var chromeMsid = ssrclines.filter(line => line.split(' ')[1].indexOf('msid:') === 0);
+    var cnames = ssrclines.filter(line => line.split(' ')[1].indexOf('cname:') === 0);
     var specMsid = SDPUtils.matchPrefix(mediaSections[i], 'a=msid:');
     if (!specMsid.length && chromeMsid.length > 0) {
       parts = chromeMsid[0].split(' ');
@@ -54,30 +50,20 @@ function upgrade(t, browserA, browserB) {
   var clientB = new WebRTCClient(driverB);
 
   getTestpage(driverA)
-  .then(function() {
-    return getTestpage(driverB);
-  })
-  .then(function() {
-    return clientA.create();
-  })
-  .then(function() {
-    return clientB.create();
-  })
-  .then(function() {
-    return clientA.getUserMedia({audio: true, video: false});
-  })
-  .then(function() {
+  .then(() => getTestpage(driverB))
+  .then(() => clientA.create())
+  .then(() => clientB.create())
+  .then(() => clientA.getUserMedia({audio: true, video: false}))
+  .then(() => {
     t.pass('got user media');
     return clientA.addStream();
   })
-  .then(function() {
-    return clientA.createOffer();
-  })
-  .then(function(offer) {
+  .then(() => clientA.createOffer())
+  .then(offer => {
     t.pass('created offer');
     return clientA.setLocalDescription(offer);
   })
-  .then(function(offerWithCandidates) {
+  .then(offerWithCandidates => {
     t.pass('offer ready to signal');
 
     // mangle interoperable msids.
@@ -85,14 +71,12 @@ function upgrade(t, browserA, browserB) {
 
     return clientB.setRemoteDescription(offerWithCandidates);
   })
-  .then(function() {
-    return clientB.createAnswer();
-  })
-  .then(function(answer) {
+  .then(() => clientB.createAnswer())
+  .then(answer => {
     t.pass('created answer');
     return clientB.setLocalDescription(answer); // modify answer here?
   })
-  .then(function(answerWithCandidates) {
+  .then(answerWithCandidates => {
     t.pass('answer ready to signal');
 
     // mangle interoperable msids.
@@ -100,30 +84,26 @@ function upgrade(t, browserA, browserB) {
 
     return clientA.setRemoteDescription(answerWithCandidates);
   })
-  .then(function() {
-    // wait for the iceConnectionState to become either connected/completed
-    // or failed.
-    return clientA.waitForIceConnectionStateChange();
-  })
-  .then(function(iceConnectionState) {
+  .then(() => // wait for the iceConnectionState to become either connected/completed
+  // or failed.
+  clientA.waitForIceConnectionStateChange())
+  .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
-  .then(function() {
+  .then(() => {
     driverA.sleep(3000);
     return clientA.getUserMedia({audio: false, video: true});
   })
-  .then(function() {
+  .then(() => {
     t.pass('got user media');
     return clientA.addStream();
   })
-  .then(function() {
-    return clientA.createOffer();
-  })
-  .then(function(offer) {
+  .then(() => clientA.createOffer())
+  .then(offer => {
     t.pass('created offer');
     return clientA.setLocalDescription(offer);
   })
-  .then(function(offerWithCandidates) {
+  .then(offerWithCandidates => {
     t.pass('offer ready to signal');
 
     // mangle interoperable msids.
@@ -134,14 +114,12 @@ function upgrade(t, browserA, browserB) {
 
     return clientB.setRemoteDescription(offerWithCandidates);
   })
-  .then(function() {
-    return clientB.createAnswer();
-  })
-  .then(function(answer) {
+  .then(() => clientB.createAnswer())
+  .then(answer => {
     t.pass('created answer');
     return clientB.setLocalDescription(answer); // modify answer here?
   })
-  .then(function(answerWithCandidates) {
+  .then(answerWithCandidates => {
     t.pass('answer ready to signal');
 
     // mangle interoperable msids.
@@ -149,32 +127,30 @@ function upgrade(t, browserA, browserB) {
 
     return clientA.setRemoteDescription(answerWithCandidates);
   })
-  .then(function() {
+  .then(() => {
     driverA.sleep(3000);
   })
-  .then(function() {
-    return Promise.all([driverA.quit(), driverB.quit()])
-    .then(function() {
-      t.end();
-    });
-  })
-  .catch(function(err) {
+  .then(() => Promise.all([driverA.quit(), driverB.quit()])
+  .then(() => {
+    t.end();
+  }))
+  .catch(err => {
     t.fail(err);
   });
 }
 
-test('Chrome-Chrome', function(t) {
+test('Chrome-Chrome', t => {
   upgrade(t, 'chrome', 'chrome');
 });
 
-test('Firefox-Firefox', function(t) {
+test('Firefox-Firefox', t => {
   upgrade(t, 'firefox', 'firefox');
 });
 
-test('Chrome-Firefox', function(t) {
+test('Chrome-Firefox', t => {
   upgrade(t, 'chrome', 'firefox');
 });
 
-test('Firefox-Chrome', function(t) {
+test('Firefox-Chrome', t => {
   upgrade(t, 'firefox', 'chrome');
 });

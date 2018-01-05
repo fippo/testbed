@@ -7,56 +7,46 @@ const buildDriver = require('./webdriver').buildDriver;
 const TIMEOUT = 30000;
 
 function waitNPeerConnectionsExist(driver, n) {
-    return driver.wait(function() {
-        return driver.executeScript(function(n) {
-            var RTCManager = angular.element(document.body).injector().get('RoomService')._currentRtcManager;
-            return RTCManager && Object.keys(RTCManager.peerConnections).length === n;
-        }, n);
-    }, TIMEOUT, 'Timed out waiting for N peerconnections to exist');
+    return driver.wait(() => driver.executeScript(n => {
+        var RTCManager = angular.element(document.body).injector().get('RoomService')._currentRtcManager;
+        return RTCManager && Object.keys(RTCManager.peerConnections).length === n;
+    }, n), TIMEOUT, 'Timed out waiting for N peerconnections to exist');
 }
 
 function waitAllPeerConnectionsConnected(driver) {
-    return driver.wait(function() {
-        return driver.executeScript(function() {
-            var RTCManager = angular.element(document.body).injector().get('RoomService')._currentRtcManager;
+    return driver.wait(() => driver.executeScript(() => {
+        var RTCManager = angular.element(document.body).injector().get('RoomService')._currentRtcManager;
 
-            var states = [];
-            Object.keys(RTCManager.peerConnections).forEach(function(id) {
-                var connection = RTCManager.peerConnections[id];
-                states.push(connection.pc.iceConnectionState);
-            });
-            return states.length === states.filter((s) => s === 'connected' || s === 'completed').length;
+        var states = [];
+        Object.keys(RTCManager.peerConnections).forEach(id => {
+            var connection = RTCManager.peerConnections[id];
+            states.push(connection.pc.iceConnectionState);
         });
-    }, TIMEOUT, 'Timed out waiting for N peerconnections to be connected');
+        return states.length === states.filter((s) => s === 'connected' || s === 'completed').length;
+    }), TIMEOUT, 'Timed out waiting for N peerconnections to be connected');
 }
 
 function waitNVideosExist(driver, n) {
-    return driver.wait(function() {
-        return driver.executeScript(function(n) {
-            return document.querySelectorAll('.video-wrapper video').length === n;
-        }, n);
-    }, TIMEOUT, 'Timed out waiting for N videos to exist');
+    return driver.wait(() => driver.executeScript(n => document.querySelectorAll('.video-wrapper video').length === n, n), TIMEOUT, 'Timed out waiting for N videos to exist');
 }
 
 function waitAllVideosHaveEnoughData(driver) {
-    return driver.wait(function() {
-        return driver.executeScript(function() {
-            var videos = document.querySelectorAll('.video-wrapper video');
-            var ready = 0;
-            for (var i = 0; i < videos.length; i++) {
-                if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
-                    ready++;
-                }
+    return driver.wait(() => driver.executeScript(() => {
+        var videos = document.querySelectorAll('.video-wrapper video');
+        var ready = 0;
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
+                ready++;
             }
-            return ready === videos.length;
-        });
-    }, TIMEOUT, 'Timed out waiting for N video to HAVE_ENOUGH_DATA');
+        }
+        return ready === videos.length;
+    }), TIMEOUT, 'Timed out waiting for N video to HAVE_ENOUGH_DATA');
 }
 
 // Edge Webdriver resolves quit slightly too early, wait a bit.
 function maybeWaitForEdge(browserA, browserB) {
     if (browserA === 'MicrosoftEdge' || browserB === 'MicrosoftEdge') {
-        return new Promise(function(resolve) {
+        return new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
     }
@@ -74,103 +64,85 @@ function interop(browserA, browserB, t) {
   driverA.manage().timeouts().setScriptTimeout(TIMEOUT);
 
   return driverA.get(url)
-  .then(function() {
-    return driverB.get(baseURL + roomName);
-  })
-  .then(function() {
-    // check that we have a peerconnection
-    return waitNPeerConnectionsExist(driverA, 1);
-  })
-  .then(function() {
+  .then(() => driverB.get(baseURL + roomName))
+  .then(() => // check that we have a peerconnection
+  waitNPeerConnectionsExist(driverA, 1))
+  .then(() => {
     t.pass('peerconnections exist');
   })
-  .then(function() {
-    // wait for the ice connection state change to connected/completed.
-    return waitAllPeerConnectionsConnected(driverA);
-  })
-  .then(function() {
+  .then(() => // wait for the ice connection state change to connected/completed.
+  waitAllPeerConnectionsConnected(driverA))
+  .then(() => {
     t.pass('all ice connections connected');
   })
-  .then(function() {
-    return waitNVideosExist(driverA, 2);
-  })
-  .then(function() {
+  .then(() => waitNVideosExist(driverA, 2))
+  .then(() => {
     t.pass('have all video elements');
   })
-  .then(function() {
-    return waitAllVideosHaveEnoughData(driverA);
-  })
-  .then(function() {
+  .then(() => waitAllVideosHaveEnoughData(driverA))
+  .then(() => {
     t.pass('all videos have ENOUGH_DATA');
   })
-  .then(function() {
-    return waitNVideosExist(driverB, 2);
-  })
-  .then(function() {
+  .then(() => waitNVideosExist(driverB, 2))
+  .then(() => {
     t.pass('have all video elements');
   })
-  .then(function() {
-    return waitAllVideosHaveEnoughData(driverB);
-  })
-  .then(function() {
+  .then(() => waitAllVideosHaveEnoughData(driverB))
+  .then(() => {
     t.pass('all videos have ENOUGH_DATA');
   })
-  .then(function() {
-    return Promise.all([driverA.quit(), driverB.quit()])
-  })
-  .then(function() {
-    return maybeWaitForEdge(browserA, browserB);
-  })
-  .then(function() {
+  .then(() => Promise.all([driverA.quit(), driverB.quit()]))
+  .then(() => maybeWaitForEdge(browserA, browserB))
+  .then(() => {
     t.end();
   })
-  .catch(function(e) {
+  .catch(e => {
     t.fail(e);
   });
 }
 
 const SELENIUM_SERVER = process.env.SELENIUM_SERVER;
 
-test('Chrome-Chrome', function(t) {
+test('Chrome-Chrome', t => {
     interop('chrome', 'chrome', t);
 });
 
-test('Firefox-Firefox', function(t) {
+test('Firefox-Firefox', t => {
     interop('firefox', 'firefox', t);
 });
 
-test('Chrome-Firefox', function(t) {
+test('Chrome-Firefox', t => {
     interop('chrome', 'firefox', t);
 });
 
-test('Firefox-Chrome', function(t) {
+test('Firefox-Chrome', t => {
     interop('firefox', 'chrome', t);
 });
 
-test('Edge-Chrome', {skip: !SELENIUM_SERVER && os.platform() !== 'win32'}, function (t) {
+test('Edge-Chrome', {skip: !SELENIUM_SERVER && os.platform() !== 'win32'}, t => {
     interop('MicrosoftEdge', 'chrome', t);
 });
 
-test('Safari-Chrome', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, function(t) {
+test('Safari-Chrome', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, t => {
     interop('safari', 'chrome', t);
 });
 
-test('Chrome-Safari', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, function(t) {
+test('Chrome-Safari', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, t => {
     interop('safari', 'chrome', t);
 });
 
-test('Firefox-Safari', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, function(t) {
+test('Firefox-Safari', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, t => {
     interop('firefox', 'safari', t);
 });
 
-test('Safari-Firefox', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, function(t) {
+test('Safari-Firefox', {skip: !SELENIUM_SERVER && os.platform() !== 'darwin'}, t => {
     interop('safari', 'firefox', t);
 });
 
-test('Edge-Safari', {skip: !SELENIUM_SERVER}, function(t) {
+test('Edge-Safari', {skip: !SELENIUM_SERVER}, t => {
     interop('MicrosoftEdge', 'safari', t);
 });
 
-test('Safari-Edge', {skip: !SELENIUM_SERVER}, function(t) {
+test('Safari-Edge', {skip: !SELENIUM_SERVER}, t => {
     interop('safari', 'MicrosoftEdge', t);
 });

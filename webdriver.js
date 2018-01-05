@@ -37,6 +37,7 @@ function buildDriver(browser, options) {
   } else {
     profile = new firefox.Profile();
   }
+  profile.setAcceptUntrustedCerts(true);
 
   // note: interoperable with Chrome only in FF46+
   //profile.setPreference('media.peerconnection.video.vp9_enabled', true);

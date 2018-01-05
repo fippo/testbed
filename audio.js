@@ -16,26 +16,16 @@ function interop(t, browserA, browserB, preferredAudioCodec) {
   var clientB = new WebRTCClient(driverB);
 
   getTestpage(driverA)
-  .then(function() {
-    return getTestpage(driverB);
-  })
-  .then(function() {
-    return clientA.create();
-  })
-  .then(function() {
-    return clientB.create();
-  })
-  .then(function() {
-    return clientA.getUserMedia({audio: true});
-  })
-  .then(function() {
+  .then(() => getTestpage(driverB))
+  .then(() => clientA.create())
+  .then(() => clientB.create())
+  .then(() => clientA.getUserMedia({audio: true}))
+  .then(() => {
     t.pass('got user media');
     return clientA.addStream();
   })
-  .then(function() {
-    return clientA.createOffer();
-  })
-  .then(function(offer) {
+  .then(() => clientA.createOffer())
+  .then(offer => {
     t.pass('created offer');
 
     if (preferredAudioCodec) {
@@ -62,69 +52,61 @@ function interop(t, browserA, browserB, preferredAudioCodec) {
     }
     return clientA.setLocalDescription(offer); // modify offer here?
   })
-  .then(function(offerWithCandidates) {
+  .then(offerWithCandidates => {
     t.pass('offer ready to signal');
     return clientB.setRemoteDescription(offerWithCandidates);
   })
-  .then(function() {
-    return clientB.createAnswer();
-  })
-  .then(function(answer) {
+  .then(() => clientB.createAnswer())
+  .then(answer => {
     t.pass('created answer');
     return clientB.setLocalDescription(answer); // modify answer here?
   })
-  .then(function(answerWithCandidates) {
+  .then(answerWithCandidates => {
     t.pass('answer ready to signal');
     return clientA.setRemoteDescription(answerWithCandidates);
   })
-  .then(function() {
-    // wait for the iceConnectionState to become either connected/completed
-    // or failed.
-    return clientA.waitForIceConnectionStateChange();
-  })
-  .then(function(iceConnectionState) {
+  .then(() => // wait for the iceConnectionState to become either connected/completed
+  // or failed.
+  clientA.waitForIceConnectionStateChange())
+  .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
   /*
    * here is where the fun starts. getStats etc
    */
-  .then(function() {
-    return clientA.getStats();
-  })
-  .then(function(stats) {
+  .then(() => clientA.getStats())
+  .then(stats => {
     console.log(stats);
   })
-  .then(function() {
-    return Promise.all([driverA.quit(), driverB.quit()])
-    .then(function() {
-      t.end();
-    });
-  })
-  .catch(function(err) {
+  .then(() => Promise.all([driverA.quit(), driverB.quit()])
+  .then(() => {
+    t.end();
+  }))
+  .catch(err => {
     t.fail(err);
   });
 }
 
-test('Chrome-Edge', {skip: os.platform() !== 'win32'}, function(t) {
+test('Chrome-Edge', {skip: os.platform() !== 'win32'}, t => {
   interop(t, 'chrome', 'MicrosoftEdge');
 });
 
-test('Edge-Chrome', {skip: os.platform() !== 'win32'}, function(t) {
+test('Edge-Chrome', {skip: os.platform() !== 'win32'}, t => {
   interop(t, 'MicrosoftEdge', 'chrome');
 });
 
-test('Firefox-Edge', {skip: os.platform() !== 'win32'}, function(t) {
+test('Firefox-Edge', {skip: os.platform() !== 'win32'}, t => {
   interop(t, 'firefox', 'MicrosoftEdge');
 });
 
-test('Edge-Firefox', {skip: os.platform() !== 'win32'}, function(t) {
+test('Edge-Firefox', {skip: os.platform() !== 'win32'}, t => {
   interop(t, 'MicrosoftEdge', 'firefox');
 });
 
-test('Chrome-Firefox', function(t) {
+test('Chrome-Firefox', t => {
   interop(t, 'chrome', 'firefox');
 });
 
-test('Firefox-Chrome', function(t) {
+test('Firefox-Chrome', t => {
   interop(t, 'firefox', 'chrome');
 });

@@ -12,9 +12,7 @@ const SDPUtils = require('sdp');
 const TIMEOUT = 30000;
 function waitNVideosExist(driver, n) {
     return driver.wait(() => {
-        return driver.executeScript(function(n) {
-            return document.querySelectorAll('video').length === n;
-        }, n);
+        return driver.executeScript(n => document.querySelectorAll('video').length === n, n);
     }, TIMEOUT);
 }
 
@@ -36,7 +34,7 @@ function waitAllVideosHaveEnoughData(driver) {
 // Edge Webdriver resolves quit slightly too early, wait a bit.
 function maybeWaitForEdge(browserA, browserB) {
     if (browserA === 'MicrosoftEdge' || browserB === 'MicrosoftEdge') {
-        return new Promise(function(resolve) {
+        return new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
     }
@@ -62,22 +60,22 @@ function video(t, browserA, browserB, bundlePolicy) {
   .then(() => {
     return clientA.createOffer({offerToReceiveAudio: true});
   })
-  .then(function(offer) {
+  .then(offer => {
     t.pass('created offer');
     return clientA.setLocalDescription(offer);
   })
-  .then(function(offerWithCandidates) {
+  .then(offerWithCandidates => {
     t.pass('offer ready to signal');
     return clientB.setRemoteDescription(offerWithCandidates);
   })
   .then(() => {
     return clientB.createAnswer();
   })
-  .then(function(answer) {
+  .then(answer => {
     t.pass('created answer');
     return clientB.setLocalDescription(answer); // modify answer here?
   })
-  .then(function(answerWithCandidates) {
+  .then(answerWithCandidates => {
     t.pass('answer ready to signal');
     return clientA.setRemoteDescription(answerWithCandidates);
   })
@@ -86,7 +84,7 @@ function video(t, browserA, browserB, bundlePolicy) {
     // or failed.
     return clientA.waitForIceConnectionStateChange();
   })
-  .then(function(iceConnectionState) {
+  .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
   .then(() => {
@@ -104,7 +102,7 @@ function video(t, browserA, browserB, bundlePolicy) {
   .then(() => {
     return maybeWaitForEdge(browserA, browserB);
   })
-  .catch(function(err) {
+  .catch(err => {
     t.fail(err);
   });
 }

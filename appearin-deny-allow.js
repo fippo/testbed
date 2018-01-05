@@ -6,26 +6,20 @@ const buildDriver = require('./webdriver').buildDriver;
 const TIMEOUT = 30000;
 
 function waitNVideosExist(driver, n) {
-    return driver.wait(function() {
-        return driver.executeScript(function(n) {
-            return document.querySelectorAll('.video-wrapper video').length === n;
-        }, n);
-    }, TIMEOUT, 'Timed out waiting for N videos to exist');
+    return driver.wait(() => driver.executeScript(n => document.querySelectorAll('.video-wrapper video').length === n, n), TIMEOUT, 'Timed out waiting for N videos to exist');
 }
 
 function waitAllVideosHaveEnoughData(driver) {
-    return driver.wait(function() {
-        return driver.executeScript(function() {
-            var videos = document.querySelectorAll('.video-wrapper video');
-            var ready = 0;
-            for (var i = 0; i < videos.length; i++) {
-                if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
-                    ready++;
-                }
+    return driver.wait(() => driver.executeScript(() => {
+        var videos = document.querySelectorAll('.video-wrapper video');
+        var ready = 0;
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
+                ready++;
             }
-            return ready === videos.length;
-        });
-    }, TIMEOUT, 'Timed out waiting for N video to HAVE_ENOUGH_DATA');
+        }
+        return ready === videos.length;
+    }), TIMEOUT, 'Timed out waiting for N video to HAVE_ENOUGH_DATA');
 }
 
 function denyAllow(browser) {

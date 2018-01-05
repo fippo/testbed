@@ -11,32 +11,26 @@ var SDPUtils = require('sdp');
 
 const TIMEOUT = 30000;
 function waitNVideosExist(driver, n) {
-    return driver.wait(function() {
-        return driver.executeScript(function(n) {
-            return document.querySelectorAll('video').length === n;
-        }, n);
-    }, TIMEOUT);
+    return driver.wait(() => driver.executeScript(n => document.querySelectorAll('video').length === n, n), TIMEOUT);
 }
 
 function waitAllVideosHaveEnoughData(driver) {
-    return driver.wait(function() {
-        return driver.executeScript(function() {
-            var videos = document.querySelectorAll('video');
-            var ready = 0;
-            for (var i = 0; i < videos.length; i++) {
-                if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
-                    ready++;
-                }
+    return driver.wait(() => driver.executeScript(() => {
+        var videos = document.querySelectorAll('video');
+        var ready = 0;
+        for (var i = 0; i < videos.length; i++) {
+            if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
+                ready++;
             }
-            return ready === videos.length;
-        });
-    }, TIMEOUT);
+        }
+        return ready === videos.length;
+    }), TIMEOUT);
 }
 
 // Edge Webdriver resolves quit slightly too early, wait a bit.
 function maybeWaitForEdge(browserA, browserB) {
     if (browserA === 'MicrosoftEdge' || browserB === 'MicrosoftEdge') {
-        return new Promise(function(resolve) {
+        return new Promise(resolve => {
             setTimeout(resolve, 2000);
         });
     }
@@ -51,26 +45,16 @@ function video(t, browserA, browserB, preferredVideoCodec) {
   var clientB = new WebRTCClient(driverB);
 
   getTestpage(driverA)
-  .then(function() {
-    return getTestpage(driverB);
-  })
-  .then(function() {
-    return clientA.create();
-  })
-  .then(function() {
-    return clientB.create();
-  })
-  .then(function() {
-    return clientA.getUserMedia({audio: true, video: true});
-  })
-  .then(function() {
+  .then(() => getTestpage(driverB))
+  .then(() => clientA.create())
+  .then(() => clientB.create())
+  .then(() => clientA.getUserMedia({audio: true, video: true}))
+  .then(() => {
     t.pass('got user media');
     return clientA.addStream();
   })
-  .then(function() {
-    return clientA.createOffer();
-  })
-  .then(function(offer) {
+  .then(() => clientA.createOffer())
+  .then(offer => {
     t.pass('created offer');
 
     var sections = SDPUtils.splitSections(offer.sdp);
@@ -96,7 +80,7 @@ function video(t, browserA, browserB, preferredVideoCodec) {
 
     return clientA.setLocalDescription(offer);
   })
-  .then(function(offerWithCandidates) {
+  .then(offerWithCandidates => {
     t.pass('offer ready to signal');
 
     // this was fixed into Chrome 51 with https://bugs.chromium.org/p/chromium/issues/detail?id=591971
@@ -112,14 +96,12 @@ function video(t, browserA, browserB, preferredVideoCodec) {
 
     return clientB.setRemoteDescription(offerWithCandidates);
   })
-  .then(function() {
-    return clientB.createAnswer();
-  })
-  .then(function(answer) {
+  .then(() => clientB.createAnswer())
+  .then(answer => {
     t.pass('created answer');
     return clientB.setLocalDescription(answer); // modify answer here?
   })
-  .then(function(answerWithCandidates) {
+  .then(answerWithCandidates => {
     t.pass('answer ready to signal');
 
     // this was fixed into Chrome 51 with https://bugs.chromium.org/p/chromium/issues/detail?id=591971
@@ -141,110 +123,100 @@ function video(t, browserA, browserB, preferredVideoCodec) {
 
     return clientA.setRemoteDescription(answerWithCandidates);
   })
-  .then(function() {
-    // wait for the iceConnectionState to become either connected/completed
-    // or failed.
-    return clientA.waitForIceConnectionStateChange();
-  })
-  .then(function(iceConnectionState) {
+  .then(() => // wait for the iceConnectionState to become either connected/completed
+  // or failed.
+  clientA.waitForIceConnectionStateChange())
+  .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
   /*
    * here is where the fun starts. getStats etc
    * or simply checking the readyState of all videos...
    */
-  .then(function() {
-    return waitNVideosExist(driverB, 1);
-  })
-  .then(function() {
-    return waitAllVideosHaveEnoughData(driverB);
-  })
-  .then(function() {
-    return Promise.all([driverA.quit(), driverB.quit()])
-    .then(function() {
-      t.end();
-    });
-  })
-  .then(function() {
-    return maybeWaitForEdge(browserA, browserB);
-  })
-  .catch(function(err) {
+  .then(() => waitNVideosExist(driverB, 1))
+  .then(() => waitAllVideosHaveEnoughData(driverB))
+  .then(() => Promise.all([driverA.quit(), driverB.quit()])
+  .then(() => {
+    t.end();
+  }))
+  .then(() => maybeWaitForEdge(browserA, browserB))
+  .catch(err => {
     t.fail(err);
   });
 }
 
-test('Chrome-Chrome, VP8', function(t) {
+test('Chrome-Chrome, VP8', t => {
   video(t, 'chrome', 'chrome', 'VP8');
 });
 
-test('Chrome-Firefox, VP8', function(t) {
+test('Chrome-Firefox, VP8', t => {
   video(t, 'chrome', 'firefox', 'VP8');
 });
 
-test('Firefox-Firefox, VP8', function(t) {
+test('Firefox-Firefox, VP8', t => {
   video(t, 'firefox', 'firefox', 'VP8');
 });
 
-test('Firefox-Chrome, VP8', function(t) {
+test('Firefox-Chrome, VP8', t => {
   video(t, 'firefox', 'chrome', 'VP8');
 });
 
-test('Chrome-Chrome, VP9', function(t) {
+test('Chrome-Chrome, VP9', t => {
   video(t, 'chrome', 'chrome', 'VP9');
 });
 
-test('Firefox-Firefox, VP9', function(t) {
+test('Firefox-Firefox, VP9', t => {
   video(t, 'firefox', 'firefox', 'VP9');
 });
 
-test('Firefox-Chrome, VP9', function(t) {
+test('Firefox-Chrome, VP9', t => {
   video(t, 'firefox', 'chrome', 'VP9');
 });
 
-test('Chrome-Firefox, VP9', function(t) {
+test('Chrome-Firefox, VP9', t => {
   video(t, 'chrome', 'firefox', 'VP9');
 });
 
 // H264 interop requires Chrome 50+ and a Firefox
 // profile pre-seeded with the right binary,
-test('Chrome-Chrome, H264', function(t) {
+test('Chrome-Chrome, H264', t => {
   video(t, 'chrome', 'chrome', 'H264');
 });
 
-test('Firefox-Firefox, H264', function(t) {
+test('Firefox-Firefox, H264', t => {
   video(t, 'firefox', 'firefox', 'H264');
 });
 
-test('Chrome-Firefox, H264', function(t) {
+test('Chrome-Firefox, H264', t => {
   video(t, 'chrome', 'firefox', 'H264');
 });
 
-test('Firefox-Chrome, H264', function(t) {
+test('Firefox-Chrome, H264', t => {
   video(t, 'firefox', 'chrome', 'H264');
 });
 
-test('Edge-Chrome', {skip: os.platform() !== 'win32'}, function (t) {
+test('Edge-Chrome', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'MicrosoftEdge', 'chrome', 'H264');
 });
 
-test('Chrome-Edge', {skip: os.platform() !== 'win32'}, function (t) {
+test('Chrome-Edge', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'chrome', 'MicrosoftEdge', 'H264');
 });
 
-test('Edge-Firefox', {skip: os.platform() !== 'win32'}, function (t) {
+test('Edge-Firefox', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'MicrosoftEdge', 'firefox', 'H264');
 });
 
-test('Firefox-Edge', {skip: os.platform() !== 'win32'}, function (t) {
+test('Firefox-Edge', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'firefox', 'MicrosoftEdge', 'H264');
 });
 
 // VP8 is available since Edge 15014
-test('Edge-Chrome VP8', {skip: os.platform() !== 'win32'}, function (t) {
+test('Edge-Chrome VP8', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'MicrosoftEdge', 'chrome', 'VP8');
 });
 
-test('Edge-Firefox VP8', {skip: os.platform() !== 'win32'}, function (t) {
+test('Edge-Firefox VP8', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'MicrosoftEdge', 'firefox', 'VP8');
 });
 /*
