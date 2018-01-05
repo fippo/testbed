@@ -41,14 +41,14 @@ function maybeWaitForEdge(browserA, browserB) {
 function video(t, browserA, browserB) {
   var driverA = buildDriver(browserA, {h264: true});
   var driverB = buildDriver(browserB, {h264: true});
+  const drivers = [driverA, driverB];
 
   var clientA = new WebRTCClient(driverA);
   var clientB = new WebRTCClient(driverB);
+  const clients = [clientA, clientB];
 
-  getTestpage(driverA)
-  .then(() => getTestpage(driverB))
-  .then(() => clientA.create())
-  .then(() => clientB.create())
+  return Promise.all(drivers.map((driver) => getTestpage(driver)))
+  .then(() => Promise.all(clients.map((client) => client.create())))
   .then(() => clientA.enumerateDevices())
   .then((devicesA) => {
     const videoDevices = devicesA.filter(d => d.kind === 'videoinput');
