@@ -68,6 +68,26 @@ WebRTCClient.prototype.generateCertificate = function(keygenAlgorithm) {
   }, keygenAlgorithm);
 };
 
+WebRTCClient.prototype.enumerateDevices = function() {
+  return this.driver.executeAsyncScript(() => {
+    var callback = arguments[arguments.length - 1];
+
+    navigator.mediaDevices.enumerateDevices()
+    .then((devices) => {
+      return devices.map((device) => {
+        return {
+          deviceId: device.deviceId,
+          kind: device.kind,
+          label: device.label,
+          groupId: device.groupId,
+        };
+      });
+    })
+    .then((devices) => {
+      callback(devices);
+    });
+  });
+};
 WebRTCClient.prototype.getUserMedia = function(constraints) {
   return this.driver.executeAsyncScript(function(constraints) {
     var callback = arguments[arguments.length - 1];
