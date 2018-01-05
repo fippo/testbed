@@ -53,9 +53,9 @@ function video(t, browserA, browserB, rtcpMuxPolicy) {
   .then(() => {
     return clientA.getUserMedia({audio: true, video: true});
   })
-  .then(() => {
+  .then((stream) => {
     t.pass('got user media');
-    return clientA.addStream();
+    return clientA.addStream(stream);
   })
   .then(() => {
     return clientA.createOffer();

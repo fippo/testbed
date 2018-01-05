@@ -53,9 +53,9 @@ function video(t, browserA, browserB, bundlePolicy) {
   .then(() => {
     return clientA.getUserMedia({audio: false, video: true});
   })
-  .then(() => {
+  .then((stream) => {
     t.pass('got user media');
-    return clientA.addStream();
+    return clientA.addStream(stream);
   })
   .then(() => {
     return clientA.createOffer({offerToReceiveAudio: true});

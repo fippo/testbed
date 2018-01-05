@@ -54,9 +54,9 @@ function upgrade(t, browserA, browserB) {
   .then(() => clientA.create())
   .then(() => clientB.create())
   .then(() => clientA.getUserMedia({audio: true, video: false}))
-  .then(() => {
+  .then((stream) => {
     t.pass('got user media');
-    return clientA.addStream();
+    return clientA.addStream(stream);
   })
   .then(() => clientA.createOffer())
   .then(offer => {

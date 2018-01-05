@@ -2,6 +2,23 @@
  * Copyright (c) 2016, Philipp Hancke
  */
 
+function MediaStream() {
+    this.tracks = [];
+    this.id = 0;
+}
+
+MediaStream.prototype.getTracks = function() {
+    return this.tracks;
+}
+
+MediaStream.prototype.getAudioTracks = function() {
+    return this.tracks.filter(t => t.kind === 'audio');
+}
+
+MediaStream.prototype.getVideoTracks = function() {
+    return this.tracks.filter(t => t.kind === 'video');
+}
+
 function WebRTCClient(driver) {
   this.driver = driver;
 }
@@ -55,21 +72,32 @@ WebRTCClient.prototype.getUserMedia = function(constraints) {
   return this.driver.executeAsyncScript(function(constraints) {
     var callback = arguments[arguments.length - 1];
 
+    if (!window.localStreams) {
+      window.localStreams = {};
+    }
+
     navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => {
+    .then((stream) => {
       window.localstream = stream;
-      callback();
+      window.localStreams[stream.id] = stream;
+      callback({id: stream.id, tracks: stream.getTracks().map((t) => {return {id: t.id, kind: t.kind};})});
     })
     .catch(err => {
       callback(err);
     });
-  }, constraints || {audio: true, video: true});
+  }, constraints || {audio: true, video: true})
+  .then((streamObj) => {
+    var stream = new MediaStream();
+    stream.id = streamObj.id;
+    stream.tracks = streamObj.tracks;
+    return stream;
+  });
 };
 
-WebRTCClient.prototype.addStream = function() {
-  return this.driver.executeScript(() => {
-    pc.addStream(localstream);
-  });
+WebRTCClient.prototype.addStream = function(stream) {
+  return this.driver.executeScript((stream) => {
+    pc.addStream(stream ? localStreams[stream.id] : localstream);
+  }, stream);
 };
 
 WebRTCClient.prototype.createDataChannel = function(label, dict) {

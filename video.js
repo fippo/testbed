@@ -49,9 +49,9 @@ function video(t, browserA, browserB, preferredVideoCodec) {
   .then(() => clientA.create())
   .then(() => clientB.create())
   .then(() => clientA.getUserMedia({audio: true, video: true}))
-  .then(() => {
+  .then((stream) => {
     t.pass('got user media');
-    return clientA.addStream();
+    return clientA.addStream(stream);
   })
   .then(() => clientA.createOffer())
   .then(offer => {
