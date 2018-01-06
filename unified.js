@@ -58,31 +58,14 @@ function video(t, browserA, browserB) {
       clientA.getUserMedia({audio: false, video: {deviceId: videoDevices[1].deviceId}}),
     ])
   })
-  .then((streams) => {
-    t.pass('got user media');
-    return Promise.all(streams.map(stream => stream.getTracks().forEach(t => clientA.addTrack(t, stream))));
-  })
+  .then((streams) => Promise.all(streams.map(stream => stream.getTracks().forEach(t => clientA.addTrack(t, stream)))))
   .then(() => clientA.createOffer())
-  .then(offer => {
-    t.pass('created offer');
-    return clientA.setLocalDescription(offer);
-  })
-  .then(offerWithCandidates => {
-    t.pass('offer ready to signal');
-    return clientB.setRemoteDescription(offerWithCandidates);
-  })
+  .then(offer => clientA.setLocalDescription(offer))
+  .then(offerWithCandidates => clientB.setRemoteDescription(offerWithCandidates))
   .then(() => clientB.createAnswer())
-  .then(answer => {
-    t.pass('created answer');
-    return clientB.setLocalDescription(answer); // modify answer here?
-  })
-  .then(answerWithCandidates => {
-    t.pass('answer ready to signal');
-    return clientA.setRemoteDescription(answerWithCandidates);
-  })
-  .then(() => // wait for the iceConnectionState to become either connected/completed
-  // or failed.
-  clientA.waitForIceConnectionStateChange())
+  .then(answer => clientB.setLocalDescription(answer))
+  .then(answerWithCandidates => clientA.setRemoteDescription(answerWithCandidates))
+  .then(() => clientA.waitForIceConnectionStateChange())
   .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
