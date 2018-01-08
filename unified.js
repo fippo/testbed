@@ -62,10 +62,10 @@ function video(t, browserA, browserB) {
   .then(() => clientA.createOffer())
   .then((offer) => {
     const sections = SDPUtils.splitSections(offer.sdp);
-    t.ok(sections.length === 4, 'SDP contains 4 mlines');
-    t.ok(SDPUtils.getKind(sections[1]) === 'audio', 'first m-line is audio');
-    t.ok(SDPUtils.getKind(sections[2]) === 'video', 'second m-line is video');
-    t.ok(SDPUtils.getKind(sections[3]) === 'video', 'third m-line is video');
+    t.ok(sections.length === 4, 'SDP contains a session part and three mediaSections');
+    t.ok(SDPUtils.getKind(sections[1]) === 'audio', 'first mediaSection is audio');
+    t.ok(SDPUtils.getKind(sections[2]) === 'video', 'second mediaSection is video');
+    t.ok(SDPUtils.getKind(sections[3]) === 'video', 'third mediaSection is video');
 
     return clientA.setLocalDescription(offer);
   })
