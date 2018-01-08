@@ -55,12 +55,20 @@ function video(t, browserA, browserB) {
     t.ok(videoDevices.length === 2, 'has two video devices');
     return Promise.all([
       clientA.getUserMedia({audio: true, video: {deviceId: videoDevices[0].deviceId}}),
-      clientA.getUserMedia({audio: false, video: {deviceId: videoDevices[1].deviceId}}),
+      clientA.getUserMedia({audio: false, video: videoDevices[1] ? {deviceId: videoDevices[1].deviceId} : true}),
     ])
   })
-  .then((streams) => Promise.all(streams.map(stream => stream.getTracks().forEach(t => clientA.addTrack(t, stream)))))
+  .then((streams) => Promise.all(streams.map(stream => Promise.all(stream.getTracks().map(t => clientA.addTrack(t, stream))))))
   .then(() => clientA.createOffer())
-  .then(offer => clientA.setLocalDescription(offer))
+  .then((offer) => {
+    const sections = SDPUtils.splitSections(offer.sdp);
+    t.ok(sections.length === 4, 'SDP contains 4 mlines');
+    t.ok(SDPUtils.getKind(sections[1]) === 'audio', 'first m-line is audio');
+    t.ok(SDPUtils.getKind(sections[2]) === 'video', 'second m-line is video');
+    t.ok(SDPUtils.getKind(sections[3]) === 'video', 'third m-line is video');
+
+    return clientA.setLocalDescription(offer);
+  })
   .then(offerWithCandidates => clientB.setRemoteDescription(offerWithCandidates))
   .then(() => clientB.createAnswer())
   .then(answer => clientB.setLocalDescription(answer))
