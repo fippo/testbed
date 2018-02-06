@@ -48,7 +48,7 @@ function video(t, browserA, browserB) {
   const clients = [clientA, clientB];
 
   return Promise.all(drivers.map((driver) => getTestpage(driver)))
-  .then(() => Promise.all(clients.map((client) => client.create())))
+  .then(() => Promise.all(clients.map((client) => client.create({sdpSemantics: 'unified-plan'}))))
   .then(() => clientA.enumerateDevices())
   .then((devicesA) => {
     const videoDevices = devicesA.filter(d => d.kind === 'videoinput');
@@ -62,7 +62,7 @@ function video(t, browserA, browserB) {
   .then(() => clientA.createOffer())
   .then((offer) => {
     const sections = SDPUtils.splitSections(offer.sdp);
-    t.ok(sections.length === 4, 'SDP contains a session part and three mediaSections');
+    t.ok(sections.length === 4, 'offer contains a session part and three mediaSections');
     t.ok(SDPUtils.getKind(sections[1]) === 'audio', 'first mediaSection is audio');
     t.ok(SDPUtils.getKind(sections[2]) === 'video', 'second mediaSection is video');
     t.ok(SDPUtils.getKind(sections[3]) === 'video', 'third mediaSection is video');
@@ -71,7 +71,14 @@ function video(t, browserA, browserB) {
   })
   .then(offerWithCandidates => clientB.setRemoteDescription(offerWithCandidates))
   .then(() => clientB.createAnswer())
-  .then(answer => clientB.setLocalDescription(answer))
+  .then(answer => {
+    const sections = SDPUtils.splitSections(answer.sdp);
+    t.ok(sections.length === 4, 'answer contains a session part and three mediaSections');
+    t.ok(SDPUtils.getKind(sections[1]) === 'audio', 'first mediaSection is audio');
+    t.ok(SDPUtils.getKind(sections[2]) === 'video', 'second mediaSection is video');
+    t.ok(SDPUtils.getKind(sections[3]) === 'video', 'third mediaSection is video');
+    return clientB.setLocalDescription(answer);
+  })
   .then(answerWithCandidates => clientA.setRemoteDescription(answerWithCandidates))
   .then(() => clientA.waitForIceConnectionStateChange())
   .then(iceConnectionState => {
@@ -97,4 +104,12 @@ test('Edge-Firefox', {skip: os.platform() !== 'win32'}, t => {
 
 test('Edge-Firefox', {skip: os.platform() !== 'win32'}, t => {
   video(t, 'Firefox', 'MicrosoftEdge');
+});
+
+test('Chrome-Firefox', t => {
+  video(t, 'chrome', 'firefox');
+});
+
+test('Firefox-Chrome', t => {
+  video(t, 'chrome', 'firefox');
 });
