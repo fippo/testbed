@@ -10,6 +10,8 @@ var getTestpage = require('./webdriver').getTestpage;
 var WebRTCClient = require('./webrtcclient');
 var SDPUtils = require('sdp');
 
+const chromepath = 'C:\\users\\phili\\LocalAppData\\Chrome SXS\\application\\chrome.exe';
+
 const TIMEOUT = 30000;
 function waitNVideosExist(driver, n) {
     return driver.wait(() => driver.executeScript(n => document.querySelectorAll('video').length === n, n), TIMEOUT);
@@ -39,8 +41,8 @@ function maybeWaitForEdge(browserA, browserB) {
 }
 
 function video(t, browserA, browserB) {
-  var driverA = buildDriver(browserA, {h264: true});
-  var driverB = buildDriver(browserB, {h264: true});
+  var driverA = buildDriver(browserA, {h264: true, chromepath});
+  var driverB = buildDriver(browserB, {h264: true, chromepath});
   const drivers = [driverA, driverB];
 
   var clientA = new WebRTCClient(driverA);
@@ -86,6 +88,7 @@ function video(t, browserA, browserB) {
   })
   .then(() => waitNVideosExist(driverB, 2))
   .then(() => waitAllVideosHaveEnoughData(driverB))
+  .then(() => driverA.sleep(30000)
   .then(() => Promise.all([driverA.quit(), driverB.quit()]))
   .then(() => t.end())
   .then(() => maybeWaitForEdge(browserA, browserB))
@@ -94,6 +97,7 @@ function video(t, browserA, browserB) {
   });
 }
 
+/*
 test('Firefox-Firefox', (t) => {
   video(t, 'firefox', 'firefox');
 });
@@ -112,4 +116,9 @@ test('Chrome-Firefox', t => {
 
 test('Firefox-Chrome', t => {
   video(t, 'chrome', 'firefox');
+});
+*/
+
+test('Edge-Chrome', {skip: os.platform() !== 'win32'}, t => {
+  video(t, 'MicrosoftEdge', 'chrome');
 });
