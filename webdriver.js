@@ -100,7 +100,9 @@ function buildDriver(browser, options) {
     chromeOptions.setChromeBinaryPath('browsers/bin/chrome-' + options.bver);
   }
 
-  if (!options.devices || options.android) {
+  if (!options.devices || options.headless || options.android) {
+    // GUM doesn't work in headless mode so we need this. See 
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=776649
     chromeOptions.addArguments('use-fake-ui-for-media-stream');
   } else {
     // see https://bugs.chromium.org/p/chromium/issues/detail?id=459532#c22
@@ -126,6 +128,9 @@ function buildDriver(browser, options) {
         }
       }
     });
+  }
+
+  if (options.devices) {
     if (options.devices.screen) {
       chromeOptions.addArguments('auto-select-desktop-capture-source=' + options.devices.screen);
     }
