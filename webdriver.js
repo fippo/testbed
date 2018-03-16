@@ -77,6 +77,7 @@ function buildDriver(browser, options) {
       // .setChromeBinaryPath('/usr/bin/google-chrome-beta')
       .addArguments('enable-features=WebRTC-H264WithOpenH264FFmpeg')
       .addArguments('allow-file-access-from-files')
+      .addArguments('allow-insecure-localhost')
       .addArguments('use-fake-device-for-media-stream')
       .addArguments('disable-translate')
       .addArguments('no-process-singleton-dialog')
