@@ -27,7 +27,9 @@ function buildDriver(browser, options) {
   options = options || {};
   if (options.firefoxprofile) {
     profile = new firefox.Profile(options.firefoxprofile);
-    if (options.h264 !== false) {
+    if (typeof options.h264 === 'string') {
+      profile.setPreference('media.gmp-gmpopenh264.version', options.h264); // openh264
+    } else if (options.h264 !== false) {
       profile.setPreference('media.gmp-gmpopenh264.version', '1.6'); // openh264
     }
   } else if (options.h264) {
