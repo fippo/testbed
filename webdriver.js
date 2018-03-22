@@ -91,6 +91,9 @@ function buildDriver(browser, options) {
   if (options.noSandbox) {
     chromeOptions.addArguments('no-sandbox');
   }
+  if (options.chromeFlags) {
+    options.chromeFlags.forEach((flag) => chromeOptions.addArguments(flag));
+  }
 
   if (options.android) {
     chromeOptions = chromeOptions.androidChrome();
