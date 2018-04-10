@@ -94,6 +94,8 @@ function buildDriver(browser, options) {
   if (options.chromeFlags) {
     options.chromeFlags.forEach((flag) => chromeOptions.addArguments(flag));
   }
+  // ensure chrome.runtime is visible.
+  chromeOptions.excludeSwitches('test-type');
 
   if (options.android) {
     chromeOptions = chromeOptions.androidChrome();
