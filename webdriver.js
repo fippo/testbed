@@ -80,6 +80,7 @@ function buildDriver(browser, options) {
       .addArguments('use-fake-device-for-media-stream')
       .addArguments('disable-translate')
       .addArguments('no-process-singleton-dialog')
+      .addArguments('disable-dev-shm-usage')
       .addArguments('mute-audio');
   if (options.experimental !== false) {
     chromeOptions.addArguments('enable-experimental-web-platform-features');
