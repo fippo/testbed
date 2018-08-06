@@ -162,6 +162,12 @@ function buildDriver(browser, options) {
       .setSafariOptions(safariOptions)
       .setLoggingPrefs(loggingPreferences)
       .forBrowser(browser);
+  if (browser === 'chrome') {
+    driver.getCapabilities().set('goog:chromeOptions', chromeOptions);
+  }
+  if (browser === 'firefox') {
+    driver.getCapabilities().set('moz:firefoxOptions', firefoxOptions);
+  }
   if (options.server === true) {
     driver = driver.usingServer('http://localhost:4444/wd/hub/');
   } else if (options.server) {
