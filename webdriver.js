@@ -180,6 +180,9 @@ function buildDriver(browser, options) {
     driver.getCapabilities().set('marionette', true);
     driver.getCapabilities().set('acceptInsecureCerts', true);
   }
+  if (options.applicationName) {
+    driver.getCapabilities().set('applicationName', options.applicationName);
+  }
   driver = driver.build();
 
   // Set global executeAsyncScript() timeout (default is 0) to allow async
