@@ -2,12 +2,12 @@
  * Copyright (c) 2016, Philipp Hancke
  */
 
-var os = require('os');
-var test = require('tape');
-var buildDriver = require('./webdriver').buildDriver;
-var getTestpage = require('./webdriver').getTestpage;
-var WebRTCClient = require('./webrtcclient');
-var SDPUtils = require('sdp');
+const os = require('os');
+const test = require('tape');
+const buildDriver = require('./webdriver').buildDriver;
+const getTestpage = require('./webdriver').getTestpage;
+const WebRTCClient = require('./webrtcclient');
+const SDPUtils = require('sdp');
 
 const TIMEOUT = 30000;
 function waitNVideosExist(driver, n) {
@@ -16,9 +16,9 @@ function waitNVideosExist(driver, n) {
 
 function waitAllVideosHaveEnoughData(driver) {
     return driver.wait(() => driver.executeScript(() => {
-        var videos = document.querySelectorAll('video');
-        var ready = 0;
-        for (var i = 0; i < videos.length; i++) {
+        const videos = document.querySelectorAll('video');
+        let ready = 0;
+        for (let i = 0; i < videos.length; i++) {
             if (videos[i].readyState >= videos[i].HAVE_ENOUGH_DATA) {
                 ready++;
             }
@@ -37,6 +37,7 @@ function maybeWaitForEdge(browserA, browserB, browserC, browserD) {
     return Promise.resolve();
 }
 
+// Chrome simulcast-munging.
 function mungeSimulcast(sdp, numberOfSimulcastLayers) {
     let cname;
     let msid;
@@ -170,11 +171,11 @@ function mungeAnswer(sdp) {
 }
 
 function simulcast(t, browserA, browserB) {
-  var driverA = buildDriver(browserA);
-  var driverB = buildDriver(browserB);
+  const driverA = buildDriver(browserA);
+  const driverB = buildDriver(browserB);
 
-  var clientA = new WebRTCClient(driverA);
-  var clientB = new WebRTCClient(driverB);
+  const clientA = new WebRTCClient(driverA);
+  const clientB = new WebRTCClient(driverB);
 
   getTestpage(driverA)
   .then(() => getTestpage(driverB))
