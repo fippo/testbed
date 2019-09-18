@@ -38,7 +38,7 @@ function maybeWaitForEdge(browserA, browserB, browserC, browserD) {
 }
 
 // Chrome simulcast-munging.
-function mungeSimulcast(sdp, numberOfSimulcastLayers) {
+function mungeChromeSimulcast(sdp, numberOfSimulcastLayers) {
     let cname;
     let msid;
     const sections = SDPUtils.splitSections(sdp);
@@ -91,6 +91,7 @@ function mungeSimulcast(sdp, numberOfSimulcastLayers) {
     return sections.join('');
 }
 
+// Splits the three ssrcs of simulcast into three different tracks/m-lines.
 function splitSimulcast(sdp) {
     const sections = SDPUtils.splitSections(sdp);
     const candidates = SDPUtils.matchPrefix(sections[1], 'a=candidate:');
@@ -151,8 +152,10 @@ function splitSimulcast(sdp) {
 	return sdp;
 }
 
-function mungeAnswer(sdp) {
+// Merges the three m-lіnes into a single one.
+function mergeSimulcast(sdp) {
 	const sections = SDPUtils.splitSections(sdp);
+    const candidates = SDPUtils.matchPrefix(sections[1], 'a=candidate:');
     const dtls = SDPUtils.getDtlsParameters(sections[1], sections[0]);
     const ice = SDPUtils.getIceParameters(sections[1], sections[0]);
     const rtpParameters = SDPUtils.parseRtpParameters(sections[1]);
@@ -167,10 +170,11 @@ function mungeAnswer(sdp) {
       'a=msid-semantic:WMS *\r\n';
     const codecs = SDPUtils.writeRtpDescription('video', rtpParameters);
     sdp += codecs;
+    candidates.forEach(c => sdp += c + '\r\n');
     return sdp;
 }
 
-function simulcast(t, browserA, browserB) {
+function simulcast(t, browserA, browserB, numberOfLayers) {
   const driverA = buildDriver(browserA);
   const driverB = buildDriver(browserB);
 
@@ -189,7 +193,9 @@ function simulcast(t, browserA, browserB) {
   .then(() => clientA.createOffer())
   .then(offer => {
     t.pass('created offer');
-    offer.sdp = mungeSimulcast(offer.sdp, 2);
+    if (browserA === 'chrome' || browserA === 'safari') {
+      offer.sdp = mungeChromeSimulcast(offer.sdp, numberOfLayers);
+    }
     return clientA.setLocalDescription(offer);
   })
   .then(offerWithCandidates => {
@@ -205,11 +211,8 @@ function simulcast(t, browserA, browserB) {
   })
   .then(answerWithCandidates => {
     t.pass('answer ready to signal');
-    answerWithCandidates.sdp = mungeAnswer(answerWithCandidates.sdp);
+    answerWithCandidates.sdp = mergeSimulcast(answerWithCandidates.sdp);
     return clientA.setRemoteDescription(answerWithCandidates);
-  })
-  .then((err) => {
-    console.error(err);
   })
   // wait for the iceConnectionState to become either connected/completed
   // or failed.
@@ -217,23 +220,19 @@ function simulcast(t, browserA, browserB) {
   .then(iceConnectionState => {
     t.ok(iceConnectionState !== 'failed', 'ICE connection is established');
   })
-  /*
-   * here is where the fun starts. getStats etc
-   * or simply checking the readyState of all videos...
-   */
-  .then(() => waitNVideosExist(driverB, 2))
+  .then(() => waitNVideosExist(driverB, numberOfLayers))
   .then(() => waitAllVideosHaveEnoughData(driverB))
   .then(() => driverA.sleep(5000)) // wait a bit since its nice.
   .then(() => Promise.all([driverA.quit(), driverB.quit()])
+  .then(() => maybeWaitForEdge(browserA, browserB))
   .then(() => {
     t.end();
   }))
-  .then(() => maybeWaitForEdge(browserA, browserB))
   .catch(err => {
     t.fail(err);
   });
 }
 
 test('Chrome-Firefox, VP8', t => {
-  simulcast(t, 'chrome', 'firefox');
+  simulcast(t, 'chrome', 'firefox', 2);
 });
