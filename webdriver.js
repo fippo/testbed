@@ -47,6 +47,7 @@ function buildDriver(browser, options) {
   profile.setPreference('media.navigator.streams.fake', true);
   profile.setPreference('media.navigator.permission.disabled', true);
   profile.setPreference('xpinstall.signatures.required', false);
+  profile.setPreference('media.peerconnection.dtls.version.min', 771); // force DTLS 1.2
   if (options.disableFirefoxWebRTC) {
     profile.setPreference('media.peerconnection.enabled', false);
   }
