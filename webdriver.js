@@ -41,9 +41,6 @@ function buildDriver(browser, options) {
   }
   profile.setAcceptUntrustedCerts(true);
 
-  // note: interoperable with Chrome only in FF46+
-  //profile.setPreference('media.peerconnection.video.vp9_enabled', true);
-
   profile.setPreference('media.navigator.streams.fake', true);
   profile.setPreference('media.navigator.permission.disabled', true);
   profile.setPreference('xpinstall.signatures.required', false);
@@ -74,7 +71,6 @@ function buildDriver(browser, options) {
 
   // Chrome options.
   let chromeOptions = new chrome.Options()
-      // .setChromeBinaryPath('/usr/bin/google-chrome-beta')
       .addArguments('enable-features=WebRTC-H264WithOpenH264FFmpeg')
       .addArguments('allow-file-access-from-files')
       .addArguments('allow-insecure-localhost')
