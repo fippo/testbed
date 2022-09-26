@@ -188,7 +188,7 @@ WebRTCClient.prototype.setLocalDescription = function(desc) {
 
     pc.setLocalDescription(new RTCSessionDescription(desc))
     .catch(err => {
-      callback(err);
+      callback(err);cd
     });
   }, desc);
 };
@@ -198,11 +198,15 @@ WebRTCClient.prototype.setLocalDescription = function(desc) {
 WebRTCClient.prototype.setRemoteDescription = function(desc) {
   return this.driver.executeAsyncScript(function(desc) {
     var callback = arguments[arguments.length - 1];
-
-    pc.onaddstream = function(event) {
+    pc.ontrack = function (event) {
+      var id = event.streams[0].id;
+      if (document.getElementById('video-' + id)) {
+        return;
+      }
       var video = document.createElement('video');
+      video.id = 'video-' + id;
       video.autoplay = true;
-      video.srcObject = event.stream;
+      video.srcObject = event.streams[0];
       document.body.appendChild(video);
     };
     pc.setRemoteDescription(new RTCSessionDescription(desc))
